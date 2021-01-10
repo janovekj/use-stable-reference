@@ -2,7 +2,7 @@
   "version": "0.1.3",
   "name": "use-stable-reference",
   "author": "Jan Ove Kjærland",
-  "description": "",
+  "description": "React hook for managing stable object and function references",
   "license": "MIT",
   "keywords": [
     "react",
