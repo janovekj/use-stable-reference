@@ -15,7 +15,7 @@ const serializeValue = <Value extends any>(value: Value) =>
     : value.toString();
 
 const useStableReference = <Value extends any>(value: Value): Value => {
-  const [internalValue, setInternalValue] = useState(value);
+  const [internalValue, setInternalValue] = useState(() => value);
 
   useEffect(() => {
     // Log warning for first render
@@ -32,7 +32,7 @@ const useStableReference = <Value extends any>(value: Value): Value => {
   useEffect(() => {
     const serializedValue = serializeValue(value);
     if (serializeValue(internalValue) !== serializedValue) {
-      setInternalValue(value);
+      setInternalValue(() => value);
     }
   }, [value, internalValue]);
 

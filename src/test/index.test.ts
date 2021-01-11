@@ -9,7 +9,7 @@ test.before(() => {
   global.__DEV__ = true;
 });
 
-test("useStableReference", () => {
+test("object", () => {
   const initial = { hello: "world" };
 
   const { result, rerender } = renderHook(
@@ -36,6 +36,38 @@ test("useStableReference", () => {
   );
 
   const next = { hello: "you" };
+  rerender(next);
+
+  is(result.current, next, "Should return the reference of the new value");
+});
+
+test("function", () => {
+  const initial = () => console.log("test");
+
+  const { result, rerender } = renderHook(
+    (value) => useStableReference(value),
+    {
+      initialProps: initial,
+    }
+  );
+
+  is(
+    result.current,
+    initial,
+    "Should be the same reference after first render"
+  );
+
+  rerender(() => console.log("test"));
+  rerender(() => console.log("test"));
+  rerender(() => console.log("test"));
+
+  is(
+    result.current,
+    initial,
+    "Should be the same reference after rerenders with new values"
+  );
+
+  const next = () => console.log("test2");
   rerender(next);
 
   is(result.current, next, "Should return the reference of the new value");
