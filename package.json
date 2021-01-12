@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0",
+  "version": "1.0.0",
   "name": "use-stable-reference",
   "author": "Jan Ove Kjærland",
   "description": "React hook for managing stable object and function references",
