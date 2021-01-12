@@ -1,12 +1,5 @@
 import { useEffect, useState } from "react";
 
-const dev = {
-  warn: (...args: Parameters<typeof console.warn>) =>
-    global.__DEV__ && console.warn(...args),
-  error: (...args: Parameters<typeof console.error>) =>
-    global.__DEV__ && console.error(...args),
-};
-
 const serializeValue = <Value extends any>(value: Value) =>
   typeof value === "function"
     ? value.toString()
@@ -14,20 +7,36 @@ const serializeValue = <Value extends any>(value: Value) =>
     ? JSON.stringify(value)
     : value.toString();
 
-const useStableReference = <Value extends any>(value: Value): Value => {
+function assertFunctionOrObject(
+  arg: unknown
+): asserts arg is Function | object {
+  if (!["function", "object"].includes(typeof arg)) {
+    throw new Error(
+      `Value must be of type object or function. Received ${typeof arg}`
+    );
+  }
+}
+
+function useStableReference<Value extends Function>(
+  val: Value,
+  deps: ReadonlyArray<any>
+): Value;
+function useStableReference<Value extends object>(val: Value): Value;
+// function signature type intentionally open-ended to allow overloads
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+function useStableReference(...args) {
+  const [value, dependencies] = args;
+
+  assertFunctionOrObject(value);
+
   const [internalValue, setInternalValue] = useState(() => value);
 
   useEffect(() => {
-    // Log warning for first render
-    if (
-      value === internalValue &&
-      !["function", "object"].includes(typeof value)
-    ) {
-      dev.warn(
-        `Attempting to get stable reference for value which might not need it: ${value}`
-      );
+    if (dependencies) {
+      setInternalValue(() => value);
     }
-  }, [internalValue, value]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, dependencies);
 
   useEffect(() => {
     const serializedValue = serializeValue(value);
@@ -37,6 +46,6 @@ const useStableReference = <Value extends any>(value: Value): Value => {
   }, [value, internalValue]);
 
   return internalValue;
-};
+}
 
 export { useStableReference };

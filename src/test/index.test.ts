@@ -41,15 +41,12 @@ test("object", () => {
   is(result.current, next, "Should return the reference of the new value");
 });
 
-test("function", () => {
+test("function without dependencies", () => {
   const initial = () => console.log("test");
 
-  const { result, rerender } = renderHook(
-    (value) => useStableReference(value),
-    {
-      initialProps: initial,
-    }
-  );
+  const { result, rerender } = renderHook((fn) => useStableReference(fn), {
+    initialProps: initial,
+  });
 
   is(
     result.current,
@@ -71,6 +68,53 @@ test("function", () => {
   rerender(next);
 
   is(result.current, next, "Should return the reference of the new value");
+});
+
+test("function with dependencies", () => {
+  let someVar = 42;
+  const initial = () => someVar;
+
+  const { result, rerender } = renderHook(
+    ([fn, deps]) => useStableReference(fn, deps),
+    {
+      initialProps: [initial, [someVar]] as [() => number, [number]],
+    }
+  );
+
+  is(
+    result.current,
+    initial,
+    "Should be the same reference after first render"
+  );
+
+  rerender([() => someVar, [someVar]]);
+  rerender([() => someVar, [someVar]]);
+  rerender([() => someVar, [someVar]]);
+
+  is(
+    result.current,
+    initial,
+    "Should be the same reference after rerenders with new reference and same dependencies"
+  );
+
+  const next = () => 123;
+  rerender([next, [someVar]]);
+
+  is(
+    result.current,
+    next,
+    "Should update the reference when implementation changes and reference stays the same"
+  );
+
+  someVar = 123;
+  const next2 = () => someVar;
+  rerender([next2, [someVar]]);
+
+  is(
+    result.current,
+    next2,
+    "Should update the reference when a dependency changes"
+  );
 });
 
 test.run();
