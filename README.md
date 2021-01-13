@@ -41,6 +41,7 @@ const MyComp = (props) => {
     [user]
   );
 
+  // Will only run if the value of the user object changes
   useEffect(() => {
     trackUser();
   }, [trackUser]);
